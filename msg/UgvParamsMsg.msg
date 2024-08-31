@@ -1,6 +1,7 @@
 Header header
 float32 kRad
 float32 omegaC
+float32 omegaB
 
 float32 kHeight
 float32 kScaleA
