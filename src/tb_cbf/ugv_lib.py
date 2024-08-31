@@ -28,12 +28,12 @@ class Ugv(object):
 
         self.off = 0.1
 
-        self.desPos = np.array([2.0, 0.0])
+        self.desPos = np.array([2.0, 2.0])
 
         self.kPos = np.array([-2.0, -2.0])
 
 
-        self.hz = 30.0
+        self.hz = 1.0
         self.dt = 1/self.hz
         self.control_input = np.array([0.0, 0.0, 0.0])
         self.cmdVel = Twist()
@@ -141,7 +141,7 @@ class Ugv(object):
 
 
 
-    def filterValues(self, err, u_):
+    def filterValues(self, u_):
         # print([self.A.shape, self.u.shape])
         # if np.linalg.norm(u_) > 1.0:
         #     u_ = u_*1.0/np.linalg.norm(u_)
@@ -168,7 +168,10 @@ class Ugv(object):
         #     print("{:.3f}, {:.3f}, {:.3f}".format(desVel[0], desVel[1], desVel[2]))
         #     print("{:.3f}, {:.3f}, {:.3f}".format(u_[0], u_[1], u_[2]))
         #     pass
-        desVel = np.maximum(-np.array([0.15, 0.15]), np.minimum(np.array([0.15, 0.15]), desVel))
+        try:
+            desVel = np.maximum(-np.array([0.15, 0.15]), np.minimum(np.array([0.15, 0.15]), desVel))
+        except TypeError:
+            desVel = np.array([0.0, 0.0])
 
         return desVel
 
@@ -179,9 +182,20 @@ class Ugv(object):
         uThrust = 0.0
         uYaw = 0.0
         if self.odomStatus:
-            pos_off = self.pos[:2] + self.off*self.R.T[:,0]
-            desVel = self.kPos * (pos_off - self.desPos)
-            print('Desired Velocity: {:.3f} : {:.3f}'.format(desVel[0], desVel[1]))
+            posOff = self.pos[:2] + self.off*self.R.T[:,0]
+            desPosOff = self.desPos[:2] + self.off*self.R.T[:,0]
+            errPos = posOff - desPosOff
+            if np.linalg.norm(errPos) < 0.02:
+                desVel = np.zeros(2)
+
+            else:
+                desVel = self.kPos * errPos
+            if np.linalg.norm(desVel) > 0.23:
+                desVel = 0.23*desVel/np.linalg.norm(desVel)
+
+            desVel = self.filterValues(desVel)
+
+            # print('Desired Velocity: {:.3f} : {:.3f}, {:.3f}'.format(desVel[0], desVel[1], self.yaw))
 
             RlInv = np.array([[np.cos(self.yaw), np.sin(self.yaw)], [-np.sin(self.yaw)/self.off, np.cos(self.yaw)/self.off]])
 

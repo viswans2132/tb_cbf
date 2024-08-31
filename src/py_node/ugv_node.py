@@ -7,6 +7,7 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist, PoseStamped
 from std_msgs.msg import Header, Int8
 from tb_cbf.msg import ConstraintMsg, UgvParamsMsg
+from gazebo_msgs.msg import ModelStates
 import time
 import numpy as np
 import sys
@@ -25,12 +26,13 @@ class UgvController:
         self.name = name
 
         self.ugv = Ugv(name)
-        if self.name == 'dcf5':
+        if self.name == 'tb1':
             self.ugv.KintV = np.array([-0.02, -0.02, -0.4])
         self.rate = rospy.Rate(30)
 
         # self.ugvOdomSub = rospy.Subscriber('/vicon/{}/{}/odom'.format(self.ugv.name, self.ugv.name), Odometry, self.odom_cb)
         self.ugvOdomSub = rospy.Subscriber('/odom'.format(self.ugv.name, self.ugv.name), Odometry, self.odom_cb)
+        self.cylOdomSub = rospy.Subscriber('/gazebo/model_states', ModelStates, self.obs_cb)
         self.ugvConsSub = rospy.Subscriber('/{}/cons'.format(self.ugv.name), ConstraintMsg, self.cons_cb)
         # self.ugvCmdPub = rospy.Publisher('/{}/cmd_vel'.format(self.ugv.name), Twist, queue_size=10)
         self.ugvCmdPub = rospy.Publisher('/cmd_vel'.format(self.ugv.name), Twist, queue_size=10)
@@ -38,6 +40,8 @@ class UgvController:
 
         self.cmdVelMsg = Twist()
         self.cmdArray = np.array([0,0,0,0.0])
+
+        self.obsPos = np.array([1.0, 0.0])
 
         time.sleep(1)
         print('Node {}: Awake'.format(self.name))
@@ -62,8 +66,31 @@ class UgvController:
 
 
     def loop(self):
-    	# h1 = 1 - self.ugv.pos[0]
-    	# dh1dt = 
+        h1 = 1 - self.ugv.pos[0]
+        dh1dx = - 1
+        dh1dy = 0.0
+        dh1dt = -self.ugv.off*np.sin(self.ugv.yaw)*self.ugv.ang_vel[2]
+
+        # cylCenter = np.array([3.0, -0.12])
+        errCyl = self.ugv.pos[:2] - self.obsPos
+
+
+
+
+        # h1 = sq_dist(errCyl, np.array([1.0, 1.0])) - 0.36
+        # dh1dx = 2*errCyl[0]
+        # dh1dy = 2*errCyl[1]
+        # dh1dt = 2*errCyl[0]*np.sin(self.ugv.yaw)*self.ugv.off*self.ugv.ang_vel[2] - 2*errCyl[1]*np.cos(self.ugv.yaw)*self.ugv.off*self.ugv.ang_vel[2]
+        # dh1dt = 0.0
+        print('h: {:.3f}'.format(h1))
+        # print('h: {:.3f}'.format(h1))
+        A = np.array([dh1dx, dh1dy])
+        b = np.array([-0.1*h1 - dh1dt])
+        Ab_  =np.hstack((A,b)).flatten()
+        droneConsMsg = ConstraintMsg()
+        droneConsMsg.constraints = Ab_.tolist()
+        self.cons_cb(droneConsMsg)
+
         odomReceived = self.ugv.generateControlInputs(self.cmdArray)
         if rospy.get_time() - self.timer > 0.2:
             self.ugv.landFlag = True
@@ -71,16 +98,16 @@ class UgvController:
             self.cmdVelMsg.linear.x = self.cmdArray[0]
             self.cmdVelMsg.angular.z = self.cmdArray[1]
             self.ugvCmdPub.publish(self.cmdVelMsg)
-            print('Publishing {:.3f}: {:.3f}'.format(self.cmdArray[0], self.cmdArray[1]))
+            # print('Publishing {:.3f}: {:.3f}'.format(self.cmdArray[0], self.cmdArray[1]))
             self.rate.sleep()
 
     def setMode(self, msg):
         self.ugv.setMode(msg.data)
 
     def cons_cb(self, msg):
-        matrix = np.array(msg.constraints).reshape((-1,4))
+        matrix = np.array(msg.constraints).reshape((-1,3))
         # print('Matrix: {}'.format(matrix))
-        self.ugv.updateConstraintMatrices(matrix[:,:3], matrix[:,3])
+        self.ugv.updateConstraintMatrices(matrix[:,:2], matrix[:,2])
 
     def land_cb(self, data):
         self.ugv.landFlag = True
@@ -109,6 +136,9 @@ class UgvController:
         velocity = np.array([msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.linear.z, msg.twist.twist.angular.z])
         self.ugv.setOdom(position, quat, velocity)
         self.timer = rospy.get_time()
+
+    def obs_cb(self, msg):
+        self.obsPos = np.array([msg.pose[2].position.x, msg.pose[2].position.y])
 
 
 
