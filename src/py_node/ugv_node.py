@@ -6,7 +6,7 @@ from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist, PoseStamped
 from std_msgs.msg import Header, Int8
-from tb_cbf.msg import ConstraintMsg, UgvParamsMsg
+from tb_cbf.msg import UgvConstraintMsg, UgvParamsMsg
 from gazebo_msgs.msg import ModelStates
 import time
 import numpy as np
@@ -33,7 +33,7 @@ class UgvController:
         # self.ugvOdomSub = rospy.Subscriber('/vicon/{}/{}/odom'.format(self.ugv.name, self.ugv.name), Odometry, self.odom_cb)
         self.ugvOdomSub = rospy.Subscriber('/odom'.format(self.ugv.name, self.ugv.name), Odometry, self.odom_cb)
         self.cylOdomSub = rospy.Subscriber('/gazebo/model_states', ModelStates, self.obs_cb)
-        self.ugvConsSub = rospy.Subscriber('/{}/cons'.format(self.ugv.name), ConstraintMsg, self.cons_cb)
+        self.ugvConsSub = rospy.Subscriber('/{}/cons'.format(self.ugv.name), ugvConstraintMsg, self.cons_cb)
         # self.ugvCmdPub = rospy.Publisher('/{}/cmd_vel'.format(self.ugv.name), Twist, queue_size=10)
         self.ugvCmdPub = rospy.Publisher('/cmd_vel'.format(self.ugv.name), Twist, queue_size=10)
         self.ugvParamPub = rospy.Publisher('/{}/param'.format(self.ugv.name), UgvParamsMsg, queue_size=10)
@@ -56,6 +56,7 @@ class UgvController:
         paramMsg.kHeight = self.ugv.kHeight
         paramMsg.kScaleA = self.ugv.kScaleA
         paramMsg.omegaA = self.ugv.omegaA
+        paramMsg.omegaB = self.ugv.omegaB
         self.ugvParamPub.publish(paramMsg)
         self.rate.sleep()
 

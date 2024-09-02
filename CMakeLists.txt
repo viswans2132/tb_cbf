@@ -52,7 +52,9 @@ catkin_python_setup()
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  ConstraintMsg.msg
+  UgvPosVelMsg.msg
+  UgvInt8Array.msg
+  UgvConstraintMsg.msg
   UgvParamsMsg.msg
 )
 
