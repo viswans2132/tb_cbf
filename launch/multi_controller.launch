@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+	
+	<group ns="demo_turtle1">
+		<node pkg="tb_cbf" name="ugv_node" type="dis_ugv_node.py" output="screen">
+			<param name="ugv_name" value="demo_turtle1" />
+		</node>
+	</group> 
+	
+	<group ns="demo_turtle2">
+		<node pkg="tb_cbf" name="ugv_node" type="dis_ugv_node.py" output="screen">
+			<param name="ugv_name" value="demo_turtle2" />
+		</node>
+	</group> 
+	
+	<group ns="demo_turtle3">
+		<node pkg="tb_cbf" name="ugv_node" type="dis_ugv_node.py" output="screen">
+			<param name="ugv_name" value="demo_turtle3" />
+		</node>
+	</group> 
+	<node pkg="cbf_constraints" name="master_node" type="master_tb_node.py" output="screen"/>
+
+</launch>

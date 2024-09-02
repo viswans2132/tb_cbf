@@ -6,7 +6,7 @@ from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist, PoseStamped
 from std_msgs.msg import Header, Int8
-from tb_cbf.msg import ConstraintMsg, UgvParamsMsg
+from tb_cbf.msg import UgvConstraintMsg, UgvParamsMsg, UgvPosVelMsg
 import time
 import numpy as np
 import sys
@@ -28,11 +28,12 @@ class UgvController:
             self.ugv.KintV = np.array([-0.02, -0.02, -0.4])
         self.rate = rospy.Rate(30)
 
-        self.ugvOdomSub = rospy.Subscriber('/vicon/{}/{}/odom'.format(self.ugv.name, self.ugv.name), Odometry, self.odom_cb)
-        self.ugvRefSub = rospy.Subscriber('/{}/ref'.format(self.ugv.name), PosVelMsg, self.ref_cb)
-        self.ugvConsSub = rospy.Subscriber('/{}/cons'.format(self.ugv.name), ConstraintMsg, self.cons_cb)
+        # self.ugvOdomSub = rospy.Subscriber('/vicon/{}/{}/odom'.format(self.ugv.name, self.ugv.name), Odometry, self.odom_cb)
+        self.ugvOdomSub = rospy.Subscriber('/{}/odom'.format(self.ugv.name), Odometry, self.odom_cb)
+        self.ugvRefSub = rospy.Subscriber('/{}/ref'.format(self.ugv.name), UgvPosVelMsg, self.ref_cb)
+        self.ugvConsSub = rospy.Subscriber('/{}/const'.format(self.ugv.name), UgvConstraintMsg, self.cons_cb)
         self.ugvCmdPub = rospy.Publisher('/{}/cmd_vel'.format(self.ugv.name), Twist, queue_size=10)
-        self.ugvParamPub = rospy.Publisher('/{}/param'.format(self.ugv.name), UgvParamsMsg, queue_size=10)
+        self.ugvParamPub = rospy.Publisher('/{}/params'.format(self.ugv.name), UgvParamsMsg, queue_size=10)
 
         self.cmdVelMsg = Twist()
         self.cmdArray = np.array([0,0,0,0.0])
@@ -50,6 +51,7 @@ class UgvController:
         paramMsg.kHeight = self.ugv.kHeight
         paramMsg.kScaleA = self.ugv.kScaleA
         paramMsg.omegaA = self.ugv.omegaA
+        paramMsg.omegaB = self.ugv.omegaB
         self.ugvParamPub.publish(paramMsg)
         self.rate.sleep()
 
@@ -65,9 +67,7 @@ class UgvController:
             self.ugv.landFlag = True
         if odomReceived:
             self.cmdVelMsg.linear.x = self.cmdArray[0]
-            self.cmdVelMsg.linear.y = self.cmdArray[1]
-            self.cmdVelMsg.linear.z = self.cmdArray[3]
-            self.cmdVelMsg.angular.z = self.cmdArray[2]
+            self.cmdVelMsg.angular.z = self.cmdArray[1]
             self.ugvCmdPub.publish(self.cmdVelMsg)
             self.rate.sleep()
 
@@ -75,9 +75,9 @@ class UgvController:
         self.ugv.setMode(msg.data)
 
     def cons_cb(self, msg):
-        matrix = np.array(msg.constraints).reshape((-1,4))
+        matrix = np.array(msg.constraints).reshape((-1,3))
         # print('Matrix: {}'.format(matrix))
-        self.ugv.updateConstraintMatrices(matrix[:,:3], matrix[:,3])
+        self.ugv.updateConstraintMatrices(matrix[:,:2], matrix[:,2])
 
     def land_cb(self, data):
         self.ugv.landFlag = True
@@ -92,13 +92,12 @@ class UgvController:
         print('Take off: Active')
 
     def ref_cb(self, msg):
-        # print(msg.position)
         try:
-            pose = np.array([msg.position[0], msg.position[1], msg.position[2], msg.yaw])
-            vel = np.array([msg.velocity[0], msg.velocity[1], msg.velocity[2], msg.yawVelocity])
+            pose = np.array([msg.position[0], msg.position[1]])
+            vel = np.array([msg.velocity[0], msg.velocity[1]])
             self.ugv.setRef(pose, vel)
         except IndexError:
-            print('Ref msg empty: {}'.format(msg.position))
+            print('Ref msg empty: {}: {}'.format(msg.position, msg.velocity))
 
     def odom_cb(self, msg):
         position = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z])

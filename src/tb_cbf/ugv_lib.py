@@ -28,7 +28,7 @@ class Ugv(object):
 
         self.off = 0.1
 
-        self.desPos = np.array([2.0, 2.0])
+        self.desPos = np.array([0.0, 0.0])
 
         self.kPos = np.array([-2.0, -2.0])
 
@@ -57,13 +57,14 @@ class Ugv(object):
         self.kOffset = 0.0
         self.omegaD = 0.7
         
-        self.kRad = 0.4
+        self.kRad = 0.25
         self.omegaC = 3.0
 
         self.kHeight = 1.0
         self.kScaleA = self.kHeight/(self.kRad*self.kRad)
         # print(self.kScaleA)
         self.omegaA = 3.0
+        self.omegaB = 5.0
 
 
         self.odomStatus = False
@@ -73,6 +74,10 @@ class Ugv(object):
         self.b = 0.0
         self.P = np.eye(2)
         self.u = cp.Variable(2)
+
+
+        self.followFlag = True
+        self.returnFlag = False
 
 
 
@@ -118,10 +123,8 @@ class Ugv(object):
 
     def setRef(self, pos, vel):
         if self.followFlag:
-            self.desPos = np.array([pos[0], pos[1], pos[2]])
-            self.desVel = np.array([vel[1], vel[2], vel[3]])
-            self.desYaw = pos[3]
-            self.desYawVel = vel[3]
+            self.desPos = np.array([pos[0], pos[1]])
+            self.desVel = np.array([vel[0], vel[1]])
 
     def publishCmdVel(self, data):
         self.cmd_pub.publish(data)
@@ -159,17 +162,18 @@ class Ugv(object):
                 desVel = np.array([0,0])
 
         else:
+            desVel = np.array([0.0, 0.0])
             desVel[0] = u_[0]
             desVel[1] = u_[1]
 
         # desVel = u_
 
         # if self.name == "dcf3":
-        #     print("{:.3f}, {:.3f}, {:.3f}".format(desVel[0], desVel[1], desVel[2]))
+        # print("{:.3f}, {:.3f}".format(desVel[0], desVel[1]))
         #     print("{:.3f}, {:.3f}, {:.3f}".format(u_[0], u_[1], u_[2]))
         #     pass
         try:
-            desVel = np.maximum(-np.array([0.15, 0.15]), np.minimum(np.array([0.15, 0.15]), desVel))
+            desVel = np.maximum(-np.array([0.3, 0.3]), np.minimum(np.array([0.3, 0.3]), desVel))
         except TypeError:
             desVel = np.array([0.0, 0.0])
 
@@ -193,14 +197,18 @@ class Ugv(object):
             if np.linalg.norm(desVel) > 0.23:
                 desVel = 0.23*desVel/np.linalg.norm(desVel)
 
+            # print('Error: {:.3f} : {:.3f}, {:.3f}'.format(errPos[0], errPos[1], self.yaw))
+            # print('Desired Velocity: {:.3f} : {:.3f}, {:.3f}'.format(desVel[0], desVel[1], self.yaw))
             desVel = self.filterValues(desVel)
 
-            # print('Desired Velocity: {:.3f} : {:.3f}, {:.3f}'.format(desVel[0], desVel[1], self.yaw))
 
             RlInv = np.array([[np.cos(self.yaw), np.sin(self.yaw)], [-np.sin(self.yaw)/self.off, np.cos(self.yaw)/self.off]])
 
 
             cmdVel = RlInv.dot(desVel)
+            if np.linalg.norm(cmdVel) > 0.1:
+                cmdVel = 0.1*cmdVel/np.linalg.norm(cmdVel)
+
             velArray[0] = cmdVel[0]
             velArray[1] = cmdVel[1]
             
