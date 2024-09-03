@@ -32,8 +32,8 @@ class UgvController:
 
         # self.ugvOdomSub = rospy.Subscriber('/vicon/{}/{}/odom'.format(self.ugv.name, self.ugv.name), Odometry, self.odom_cb)
         self.ugvOdomSub = rospy.Subscriber('/odom'.format(self.ugv.name, self.ugv.name), Odometry, self.odom_cb)
-        self.cylOdomSub = rospy.Subscriber('/gazebo/model_states', ModelStates, self.obs_cb)
-        self.ugvConsSub = rospy.Subscriber('/{}/cons'.format(self.ugv.name), ugvConstraintMsg, self.cons_cb)
+        # self.cylOdomSub = rospy.Subscriber('/gazebo/model_states', ModelStates, self.obs_cb)
+        self.ugvConsSub = rospy.Subscriber('/{}/cons'.format(self.ugv.name), UgvConstraintMsg, self.cons_cb)
         # self.ugvCmdPub = rospy.Publisher('/{}/cmd_vel'.format(self.ugv.name), Twist, queue_size=10)
         self.ugvCmdPub = rospy.Publisher('/cmd_vel'.format(self.ugv.name), Twist, queue_size=10)
         self.ugvParamPub = rospy.Publisher('/{}/param'.format(self.ugv.name), UgvParamsMsg, queue_size=10)
@@ -88,7 +88,7 @@ class UgvController:
         A = np.array([dh1dx, dh1dy])
         b = np.array([-0.1*h1 - dh1dt])
         Ab_  =np.hstack((A,b)).flatten()
-        droneConsMsg = ConstraintMsg()
+        droneConsMsg = UgvConstraintMsg()
         droneConsMsg.constraints = Ab_.tolist()
         self.cons_cb(droneConsMsg)
 

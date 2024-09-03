@@ -57,7 +57,7 @@ class Ugv(object):
         self.kOffset = 0.0
         self.omegaD = 0.7
         
-        self.kRad = 0.25
+        self.kRad = 0.35
         self.omegaC = 3.0
 
         self.kHeight = 1.0
@@ -98,14 +98,18 @@ class Ugv(object):
         R_inv = quaternion_matrix(self.quat)[:-1, :-1]
         # self.R = np.linalg.inv(R_inv)
         self.R = np.array([[np.cos(self.yaw), np.sin(self.yaw)], [-np.sin(self.yaw), np.cos(self.yaw)]])
+        self.vel = R_inv.T.dot(np.array([velocity[0], velocity[1], velocity[2]]))
 
-        self.vel[0] = velocity[0]
-        self.vel[1] = velocity[1]
-        self.vel[2] = velocity[2]
+
+        # self.vel[0] = velocity[0]
+        # self.vel[1] = velocity[1]
+        # self.vel[2] = velocity[2]
         self.ang_vel[2] = velocity[3]
 
         if self.odomStatus == False:
             self.odomStatus = True
+            self.desPos[0] = self.pos[0]
+            self.desPos[1] = self.pos[1]
             print('Odometry Received: {}'.format(self.name))
 
         # if self.name=="demo_turtle1" and self.pos[0] < 0.6:
@@ -153,9 +157,13 @@ class Ugv(object):
             try:
                 constraints = [self.A@self.u >= self.b]
                 prob = cp.Problem(cp.Minimize(cp.quad_form(self.u-u_, self.P)), constraints)
-                result = prob.solve()
+                try:
+                    result = prob.solve()
+                    desVel = self.u.value
+                except cvxpy.error.SolveError:
+                    print('SolveError for {}'.format(self.name))
+                    desVel = np.array([0,0.0])
 
-                desVel = self.u.value
             except ValueError:
                 print("Constraint matrices have incompatible dimensions {}:{}".format(self.A.shape, self.b.shape))
                 self.landFlag = True
@@ -165,6 +173,7 @@ class Ugv(object):
             desVel = np.array([0.0, 0.0])
             desVel[0] = u_[0]
             desVel[1] = u_[1]
+            print('Constraints Not received')
 
         # desVel = u_
 
@@ -206,8 +215,9 @@ class Ugv(object):
 
 
             cmdVel = RlInv.dot(desVel)
-            if np.linalg.norm(cmdVel) > 0.1:
-                cmdVel = 0.1*cmdVel/np.linalg.norm(cmdVel)
+            # if np.linalg.norm(cmdVel) > 0.3:
+            #     cmdVel = 0.3*cmdVel/np.linalg.norm(cmdVel)
+            cmdVel = np.maximum(-np.array([0.1, 0.5]), np.minimum(np.array([0.1, 0.5]), cmdVel))
 
             velArray[0] = cmdVel[0]
             velArray[1] = cmdVel[1]

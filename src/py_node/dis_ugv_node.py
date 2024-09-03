@@ -28,10 +28,10 @@ class UgvController:
             self.ugv.KintV = np.array([-0.02, -0.02, -0.4])
         self.rate = rospy.Rate(30)
 
-        # self.ugvOdomSub = rospy.Subscriber('/vicon/{}/{}/odom'.format(self.ugv.name, self.ugv.name), Odometry, self.odom_cb)
-        self.ugvOdomSub = rospy.Subscriber('/{}/odom'.format(self.ugv.name), Odometry, self.odom_cb)
+        self.ugvOdomSub = rospy.Subscriber('/vicon/{}/{}/odom'.format(self.ugv.name, self.ugv.name), Odometry, self.odom_cb)
+        # self.ugvOdomSub = rospy.Subscriber('/{}/odom'.format(self.ugv.name), Odometry, self.odom_cb)
         self.ugvRefSub = rospy.Subscriber('/{}/ref'.format(self.ugv.name), UgvPosVelMsg, self.ref_cb)
-        self.ugvConsSub = rospy.Subscriber('/{}/const'.format(self.ugv.name), UgvConstraintMsg, self.cons_cb)
+        self.ugvConsSub = rospy.Subscriber('/{}/cons'.format(self.ugv.name), UgvConstraintMsg, self.cons_cb)
         self.ugvCmdPub = rospy.Publisher('/{}/cmd_vel'.format(self.ugv.name), Twist, queue_size=10)
         self.ugvParamPub = rospy.Publisher('/{}/params'.format(self.ugv.name), UgvParamsMsg, queue_size=10)
 
