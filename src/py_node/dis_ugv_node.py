@@ -68,7 +68,7 @@ class UgvController:
         if odomReceived:
             self.cmdVelMsg.linear.x = self.cmdArray[0]
             self.cmdVelMsg.angular.z = self.cmdArray[1]
-            self.ugvCmdPub.publish(self.cmdVelMsg)
+            # self.ugvCmdPub.publish(self.cmdVelMsg)
             self.rate.sleep()
 
     def setMode(self, msg):

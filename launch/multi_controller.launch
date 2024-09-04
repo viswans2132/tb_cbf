@@ -18,6 +18,6 @@
 			<param name="ugv_name" value="demo_turtle3" />
 		</node>
 	</group> 
-	<node pkg="cbf_constraints" name="master_node" type="master_tb_node.py" output="screen"/>
+	<node pkg="cbf_constraints" name="master_tb_node" type="master_tb_node.py" output="screen"/>
 
 </launch>

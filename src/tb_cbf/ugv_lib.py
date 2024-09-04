@@ -80,6 +80,16 @@ class Ugv(object):
         self.returnFlag = False
 
 
+    def setMode(self, data):
+        if data == 0:
+            self.filterFlag = True
+            self.followFlag = True
+            print('filter: ON {}'.format(self.name))
+        elif data == 1:
+            self.returnFlag = True
+
+        else:
+            print('Invalid mode for UGV: {}'.format(self.name))
 
 
 
@@ -173,7 +183,7 @@ class Ugv(object):
             desVel = np.array([0.0, 0.0])
             desVel[0] = u_[0]
             desVel[1] = u_[1]
-            print('Constraints Not received')
+            # print('Constraints Not received')
 
         # desVel = u_
 
@@ -217,7 +227,7 @@ class Ugv(object):
             cmdVel = RlInv.dot(desVel)
             # if np.linalg.norm(cmdVel) > 0.3:
             #     cmdVel = 0.3*cmdVel/np.linalg.norm(cmdVel)
-            cmdVel = np.maximum(-np.array([0.1, 0.5]), np.minimum(np.array([0.1, 0.5]), cmdVel))
+            cmdVel = np.maximum(-np.array([0.15, 0.6]), np.minimum(np.array([0.15, 0.6]), cmdVel))
 
             velArray[0] = cmdVel[0]
             velArray[1] = cmdVel[1]
