@@ -96,7 +96,7 @@ class Ugv(object):
     def setOdom(self, position, quat, velocity):
         self.pos[0] = position[0]
         self.pos[1] = position[1]
-        self.pos[2] = position[2]
+        self.pos[2] = position[2] + 0.06
         self.quat[0] = quat[0]
         self.quat[1] = quat[1]
         self.quat[2] = quat[2]
@@ -227,7 +227,7 @@ class Ugv(object):
             cmdVel = RlInv.dot(desVel)
             # if np.linalg.norm(cmdVel) > 0.3:
             #     cmdVel = 0.3*cmdVel/np.linalg.norm(cmdVel)
-            cmdVel = np.maximum(-np.array([0.15, 0.6]), np.minimum(np.array([0.15, 0.6]), cmdVel))
+            cmdVel = np.maximum(-np.array([0.1, 0.4]), np.minimum(np.array([0.1, 0.4]), cmdVel))
 
             velArray[0] = cmdVel[0]
             velArray[1] = cmdVel[1]
