@@ -57,7 +57,7 @@ class Ugv(object):
         self.kOffset = 0.0
         self.omegaD = 0.7
         
-        self.kRad = 0.35
+        self.kRad = 0.4
         self.omegaC = 3.0
 
         self.kHeight = 1.0
@@ -76,17 +76,22 @@ class Ugv(object):
         self.u = cp.Variable(2)
 
 
+        self.filterFlag = False
         self.followFlag = True
         self.returnFlag = False
+        self.stopFlag = False
 
 
     def setMode(self, data):
+        self.filterFlag = True
         if data == 0:
-            self.filterFlag = True
             self.followFlag = True
             print('filter: ON {}'.format(self.name))
         elif data == 1:
             self.returnFlag = True
+        elif data == 2:
+            print('Stopping UGV: {}'.format(self.name))
+            self.stopFlag = True
 
         else:
             print('Invalid mode for UGV: {}'.format(self.name))
@@ -205,65 +210,36 @@ class Ugv(object):
         uThrust = 0.0
         uYaw = 0.0
         if self.odomStatus:
-            posOff = self.pos[:2] + self.off*self.R.T[:,0]
-            desPosOff = self.desPos[:2] + self.off*self.R.T[:,0]
-            errPos = posOff - desPosOff
-            if np.linalg.norm(errPos) < 0.02:
-                desVel = np.zeros(2)
-
+            if self.stopFlag:
+                velArray[0] = 0.0
+                velArray[1] = 0.0
             else:
-                desVel = self.kPos * errPos
-            if np.linalg.norm(desVel) > 0.23:
-                desVel = 0.23*desVel/np.linalg.norm(desVel)
+                if self.filterFlag:
+                    posOff = self.pos[:2] + self.off*self.R.T[:,0]
+                    desPosOff = self.desPos[:2] + self.off*self.R.T[:,0]
+                    errPos = posOff - desPosOff 
+                    if np.linalg.norm(errPos) < 0.02:
+                        desVel = np.zeros(2)
 
-            # print('Error: {:.3f} : {:.3f}, {:.3f}'.format(errPos[0], errPos[1], self.yaw))
-            # print('Desired Velocity: {:.3f} : {:.3f}, {:.3f}'.format(desVel[0], desVel[1], self.yaw))
-            desVel = self.filterValues(desVel)
+                    else:
+                        desVel = self.kPos * errPos 
+                    if np.linalg.norm(desVel) > 0.23:
+                        desVel = 0.23*desVel/np.linalg.norm(desVel)
 
-
-            RlInv = np.array([[np.cos(self.yaw), np.sin(self.yaw)], [-np.sin(self.yaw)/self.off, np.cos(self.yaw)/self.off]])
-
-
-            cmdVel = RlInv.dot(desVel)
-            # if np.linalg.norm(cmdVel) > 0.3:
-            #     cmdVel = 0.3*cmdVel/np.linalg.norm(cmdVel)
-            cmdVel = np.maximum(-np.array([0.1, 0.4]), np.minimum(np.array([0.1, 0.4]), cmdVel))
-
-            velArray[0] = cmdVel[0]
-            velArray[1] = cmdVel[1]
-            
-
-            # errPos = self.pos - self.desPos
-            # # print('{:.3f}, {:.3f}, {:.3f}'.format(errPos[0], errPos[1], errPos[2]))
-            # if self.returnFlag and np.linalg.norm(errPos[:2]) < 0.5:
-            #     self.errInt = self.errInt + errPos*self.dt
-            #     self.errInt = np.maximum(-self.maxInt, np.minimum(self.maxInt, self.errInt))
-
-            # self.desVel = self.Kpos * errPos + self.KintP * self.errInt
-
-            # if self.filterFlag:
-            #     self.desVel = self.filterValues(errPos, self.desVel)
-
-            # velW = self.R.T.dot(self.vel)
+                    # print('Error: {:.3f} : {:.3f}, {:.3f}'.format(errPos[0], errPos[1], self.yaw))
+                    # print('Desired Velocity: {:.3f} : {:.3f}, {:.3f}'.format(desVel[0], desVel[1], self.yaw))
+                    desVel = self.filterValues(desVel)
 
 
-            # derVel = ((velW - self.desVel) - self.errVel)/self.dt
-            # self.errVel = velW - self.desVel
+                    RlInv = np.array([[np.cos(self.yaw), np.sin(self.yaw)], [-np.sin(self.yaw)/self.off, np.cos(self.yaw)/self.off]])
 
-            # if self.startFlag:
-            #     self.errVelInt = self.errVelInt + self.errVel*self.dt
-            # self.errVelInt = np.maximum(-self.maxVelInt, np.minimum(self.maxVelInt, self.errVelInt))
-            # # print(self.errVelInt)
 
-            # des_a = self.Kvel * self.errVel + self.Kder * derVel + self.KintV * self.errVelInt
-            # # des_a = self.Kvel * self.errVel
-            # des_a = self.R.dot(des_a)
-            # # print("Error: {0:.3f}: {1:.3f}: {2:.3f}: \n Acc: {3:.3f}: {4:.3f}: {5:.3f}".format(self.errVel[0], errPos[1], errPos[2], des_a[0], des_a[1], des_a[2]))
-            # # print(des_a)
-            # # print(des_a[3])
-            # des_a = np.maximum(-self.maxAcc, np.minimum(self.maxAcc, des_a))
-            # # print("{:.3f}: {:.3f}: {:.3f}".format(errPos[0], errPos[1], errPos[2]))
+                    cmdVel = RlInv.dot(desVel)
+                    # if np.linalg.norm(cmdVel) > 0.3:
+                    #     cmdVel = 0.3*cmdVel/np.linalg.norm(cmdVel)
+                    cmdVel = np.maximum(-np.array([0.1, 0.4]), np.minimum(np.array([0.1, 0.4]), cmdVel))
 
-            # # yaw_diff = np.minimum(0.2, np.maximum(self.desYaw - self.yaw, -0.2))
+                    velArray[0] = cmdVel[0]
+                    velArray[1] = cmdVel[1]
 
         return self.odomStatus
