@@ -55,7 +55,7 @@ class Ugv(object):
         self.kRate = 1/(d*d)
         # print([self.kScaleD, self.kRate])
         self.kOffset = 0.0
-        self.omegaD = 0.7
+        self.omegaD = 3
         
         self.kRad = 0.6
         self.omegaC = 3.0
@@ -192,8 +192,8 @@ class Ugv(object):
 
         # desVel = u_
 
-        # if self.name == "dcf3":
-        # print("{:.3f}, {:.3f}".format(desVel[0], desVel[1]))
+        # if self.name == "dcf5":
+        #     print("{:.3f}, {:.3f}".format(desVel[0], desVel[1]))
         #     print("{:.3f}, {:.3f}, {:.3f}".format(u_[0], u_[1], u_[2]))
         #     pass
         try:
