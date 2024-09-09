@@ -57,7 +57,7 @@ class Ugv(object):
         self.kOffset = 0.0
         self.omegaD = 0.7
         
-        self.kRad = 0.4
+        self.kRad = 0.6
         self.omegaC = 3.0
 
         self.kHeight = 1.0
