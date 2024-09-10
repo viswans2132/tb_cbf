@@ -48,7 +48,7 @@ class Ugv(object):
         # self.cmd_sub = rospy.Subscriber('/old_cmd_vel', TwistStamped, self.oldControl_cb)
 
         ezp = 0.5
-        theta = np.deg2rad(30)
+        theta = np.deg2rad(25)
         d = ezp*np.tan(theta)
 
         self.kScaleD = np.exp(1)*ezp
@@ -197,7 +197,7 @@ class Ugv(object):
         #     print("{:.3f}, {:.3f}, {:.3f}".format(u_[0], u_[1], u_[2]))
         #     pass
         try:
-            desVel = np.maximum(-np.array([0.3, 0.3]), np.minimum(np.array([0.3, 0.3]), desVel))
+            desVel = np.maximum(-np.array([0.15, 0.15]), np.minimum(np.array([0.15, 0.15]), desVel))
         except TypeError:
             desVel = np.array([0.0, 0.0])
 
@@ -237,7 +237,7 @@ class Ugv(object):
                     cmdVel = RlInv.dot(desVel)
                     # if np.linalg.norm(cmdVel) > 0.3:
                     #     cmdVel = 0.3*cmdVel/np.linalg.norm(cmdVel)
-                    cmdVel = np.maximum(-np.array([0.1, 0.4]), np.minimum(np.array([0.1, 0.4]), cmdVel))
+                    cmdVel = np.maximum(-np.array([0.07, 0.28]), np.minimum(np.array([0.07, 0.28]), cmdVel))
 
                     velArray[0] = cmdVel[0]
                     velArray[1] = cmdVel[1]
