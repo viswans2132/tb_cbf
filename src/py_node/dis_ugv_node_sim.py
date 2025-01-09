@@ -7,6 +7,7 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist, PoseStamped
 from std_msgs.msg import Header, Int8
 from tb_cbf.msg import UgvConstraintMsg, UgvParamsMsg, UgvPosVelMsg
+from tf.transformations import euler_from_quaternion, quaternion_matrix
 import time
 import numpy as np
 import sys
@@ -24,12 +25,17 @@ class UgvController:
         self.name = name
 
         self.ugv = Ugv(name)
-        if self.name == 'dcf5':
-            self.ugv.KintV = np.array([-0.02, -0.02, -0.4])
+        ezp = 1.0
+        theta = np.deg2rad(25)
+        self.omegaD = 0.5
+        d = ezp*np.tan(theta)
+        self.ugv.kScaleD = np.exp(1)*ezp
+        self.ugv.kRate = 1/(d*d)
+        self.ugv.kRad = 0.5
+
         self.rate = rospy.Rate(30)
 
-        self.ugvOdomSub = rospy.Subscriber('/vicon/{}/{}/odom'.format(self.ugv.name, self.ugv.name), Odometry, self.odom_cb)
-        # self.ugvOdomSub = rospy.Subscriber('/{}/odom'.format(self.ugv.name), Odometry, self.odom_cb)
+        self.ugvOdomSub = rospy.Subscriber('/{}/odom'.format(self.ugv.name), Odometry, self.odom_cb)
         self.ugvPvRefSub = rospy.Subscriber('/{}/ref'.format(self.ugv.name), UgvPosVelMsg, self.ref_pv_cb)
         self.ugvPsRefSub = rospy.Subscriber('/{}/reference'.format(self.ugv.name), PoseStamped, self.ref_ps_cb)
         self.ugvConsSub = rospy.Subscriber('/{}/cons'.format(self.ugv.name), UgvConstraintMsg, self.cons_cb)
@@ -74,7 +80,7 @@ class UgvController:
             self.ugvCmdPub.publish(self.cmdVelMsg)
             self.rate.sleep()
         else:
-            print('Odometry not received')
+            print('{}: Odometry not received'.format(self.name))
 
     def setMode(self, msg):
         self.ugv.setMode(msg.data)
@@ -113,8 +119,8 @@ class UgvController:
             print('Ref msg empty: {}: {}'.format(msg.position, msg.velocity))
 
     def odom_cb(self, msg):
-        position = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z])
         quat = np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
+        position = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z])
         velocity = np.array([msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.linear.z, msg.twist.twist.angular.z])
         self.ugv.setOdom(position, quat, velocity)
         self.timer = rospy.get_time()

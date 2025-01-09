@@ -48,22 +48,22 @@ class Ugv(object):
         # self.cmd_sub = rospy.Subscriber('/old_cmd_vel', TwistStamped, self.oldControl_cb)
 
         ezp = 0.5
-        theta = np.deg2rad(25)
+        theta = np.deg2rad(30)
         d = ezp*np.tan(theta)
 
         self.kScaleD = np.exp(1)*ezp
         self.kRate = 1/(d*d)
-        # print([self.kScaleD, self.kRate])
-        self.kOffset = 0.0
+
+        self.kOffset = 0.01
         self.omegaD = 3
         
-        self.kRad = 0.6
+        self.kRad = 0.3
         self.omegaC = 3.0
 
         self.kHeight = 1.0
         self.kScaleA = self.kHeight/(self.kRad*self.kRad)
-        # print(self.kScaleA)
-        self.omegaA = 3.0
+
+        self.omegaA = 0.3
         self.omegaB = 5.0
 
 
@@ -84,6 +84,7 @@ class Ugv(object):
 
     def setMode(self, data):
         self.filterFlag = True
+        # print('{}: Filter Flag = {}'.format(self.name, self.filterFlag))
         if data == 0:
             self.followFlag = True
             print('filter: ON {}'.format(self.name))
@@ -175,7 +176,7 @@ class Ugv(object):
                 try:
                     result = prob.solve()
                     desVel = self.u.value
-                except cvxpy.error.SolveError:
+                except cp.error.SolveError:
                     print('SolveError for {}'.format(self.name))
                     desVel = np.array([0,0.0])
 
@@ -217,8 +218,9 @@ class Ugv(object):
                 if self.filterFlag:
                     posOff = self.pos[:2] + self.off*self.R.T[:,0]
                     desPosOff = self.desPos[:2] + self.off*self.R.T[:,0]
-                    errPos = posOff - desPosOff 
-                    if np.linalg.norm(errPos) < 0.02:
+                    errPos = posOff - desPosOff
+                    # print('err')
+                    if np.linalg.norm(errPos) < 0.05:
                         desVel = np.zeros(2)
 
                     else:
@@ -226,18 +228,21 @@ class Ugv(object):
                     if np.linalg.norm(desVel) > 0.23:
                         desVel = 0.23*desVel/np.linalg.norm(desVel)
 
-                    # print('Error: {:.3f} : {:.3f}, {:.3f}'.format(errPos[0], errPos[1], self.yaw))
-                    # print('Desired Velocity: {:.3f} : {:.3f}, {:.3f}'.format(desVel[0], desVel[1], self.yaw))
                     desVel = self.filterValues(desVel)
+                    # if(self.name == "demo_turtle4"):
+                    #     print('Error: {:.3f} : {:.3f}, {:.3f}'.format(errPos[0], errPos[1], self.yaw))
+                    #     print('Desired Velocity: {:.3f} : {:.3f}, {:.3f}'.format(desVel[0], desVel[1], self.yaw))
 
 
                     RlInv = np.array([[np.cos(self.yaw), np.sin(self.yaw)], [-np.sin(self.yaw)/self.off, np.cos(self.yaw)/self.off]])
 
 
                     cmdVel = RlInv.dot(desVel)
-                    # if np.linalg.norm(cmdVel) > 0.3:
-                    #     cmdVel = 0.3*cmdVel/np.linalg.norm(cmdVel)
-                    cmdVel = np.maximum(-np.array([0.07, 0.28]), np.minimum(np.array([0.07, 0.28]), cmdVel))
+                    if np.linalg.norm(cmdVel) > 0.3:
+                        cmdVel = 0.3*cmdVel/np.linalg.norm(cmdVel)
+                    cmdVel = np.maximum(-np.array([0.1, 0.3]), np.minimum(np.array([0.1, 0.3]), cmdVel))
+                    # if(self.name == "demo_turtle4"):
+                    #     print('Desired Velocity: {:.3f} : {:.3f}'.format(cmdVel[0], cmdVel[1]))
 
                     velArray[0] = cmdVel[0]
                     velArray[1] = cmdVel[1]

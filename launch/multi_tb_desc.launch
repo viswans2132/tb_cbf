@@ -1,0 +1,112 @@
+<launch>
+  <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="first_tb3"  default="demo_turtle1"/>
+  <arg name="second_tb3" default="demo_turtle4"/>
+  <arg name="third_tb3"  default="demo_turtle3"/>
+
+  <arg name="first_tb3_x_pos" default="-1.0"/>
+  <arg name="first_tb3_y_pos" default="-1.0"/>
+  <arg name="first_tb3_z_pos" default=" 0.0"/>
+  <arg name="first_tb3_yaw"   default=" 1.57"/>
+
+  <arg name="second_tb3_x_pos" default=" 1.0"/>
+  <arg name="second_tb3_y_pos" default="-1.0"/>
+  <arg name="second_tb3_z_pos" default=" 0.0"/>
+  <arg name="second_tb3_yaw"   default=" 1.57"/>
+
+  <arg name="third_tb3_x_pos" default=" 0.5"/>
+  <arg name="third_tb3_y_pos" default=" 1.0"/>
+  <arg name="third_tb3_z_pos" default=" 0.0"/>
+  <arg name="third_tb3_yaw"   default=" 0.0"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find turtlebot3_gazebo)/worlds/empty.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="false"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>  
+
+ <!-- SPAWN A UAV -->
+  <group ns="cf8">
+    <param name="robot_description" command="$(find xacro)/xacro '$(find crazyflie_description)/urdf/crazyflie2.urdf.xacro'"/>
+    <param name="tf_prefix" value="cf8" />
+    
+
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+        <param name="tf_prefix" value="cf8" />
+    </node>
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  </group>
+
+ <!-- SPAWN A UAV -->
+  <group ns="dcf6">
+    <param name="robot_description" command="$(find xacro)/xacro '$(find crazyflie_description)/urdf/crazyflie2.urdf.xacro'"/>
+    <param name="tf_prefix" value="dcf6" />
+    
+
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+        <param name="tf_prefix" value="dcf6" />
+    </node>
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  </group>
+
+
+ <!-- SPAWN A UAV -->
+  <group ns="dcf2">
+    <param name="robot_description" command="$(find xacro)/xacro '$(find crazyflie_description)/urdf/crazyflie2.urdf.xacro'"/>
+    <param name="tf_prefix" value="dcf2" />
+    
+
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+        <param name="tf_prefix" value="dcf2" />
+    </node>
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  </group>
+
+
+  <group ns = "$(arg first_tb3)">
+    <param name="robot_description" command="$(find xacro)/xacro $(find turtlebot3_description)/urdf/turtlebot3_burger.urdf.xacro" />
+      <param name="tf_prefix" value="$(arg first_tb3)" />
+
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
+      <param name="publish_frequency" type="double" value="50.0" />
+      <param name="tf_prefix" value="$(arg first_tb3)" />
+    </node>
+  </group>
+
+  <group ns = "$(arg second_tb3)">
+    <param name="robot_description" command="$(find xacro)/xacro $(find turtlebot3_description)/urdf/turtlebot3_burger.urdf.xacro" />
+      <param name="tf_prefix" value="$(arg second_tb3)" />
+
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
+      <param name="publish_frequency" type="double" value="50.0" />
+      <param name="tf_prefix" value="$(arg second_tb3)" />
+    </node>
+
+  </group>
+
+  <group ns = "$(arg third_tb3)">
+    <param name="robot_description" command="$(find xacro)/xacro $(find turtlebot3_description)/urdf/turtlebot3_burger.urdf.xacro" />
+      <param name="tf_prefix" value="$(arg third_tb3)" />
+
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
+      <param name="publish_frequency" type="double" value="50.0" />
+      <param name="tf_prefix" value="$(arg third_tb3)" />
+    </node>
+  </group>
+
+  <node pkg="tf" type="static_transform_publisher" name="world_odom_broadcaster" args="0 0 0 0 0 0 1 world odom 1000" />
+  <node pkg="tf" type="static_transform_publisher" name="world_map_broadcaster" args="0 0 0 0 0 0 1 world map 1000" />
+  <node pkg="tf" type="static_transform_publisher" name="odom_dt1odom_broadcaster" args="0 0 0 0 0 0 1 odom demo_turtle1/odom 1000" />
+  <node pkg="tf" type="static_transform_publisher" name="odom_dt2odom_broadcaster" args="0 0 0 0 0 0 1 odom demo_turtle4/odom 1000" />
+  <node pkg="tf" type="static_transform_publisher" name="odom_dt3odom_broadcaster" args="0 0 0 0 0 0 1 odom demo_turtle3/odom 1000" />
+    <!-- <node pkg="tf" type="static_transform_publisher" name="cf1_world_broadcaster" args="0 0 0.8 0 0 -0.3827 0.9239 world dcf6/crazyflie2/base_link 100" /> -->
+
+
+
+</launch>
