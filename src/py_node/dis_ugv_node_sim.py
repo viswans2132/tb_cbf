@@ -25,13 +25,13 @@ class UgvController:
         self.name = name
 
         self.ugv = Ugv(name)
-        ezp = 1.0
+        ezp = 0.5
         theta = np.deg2rad(25)
         self.omegaD = 0.5
         d = ezp*np.tan(theta)
         self.ugv.kScaleD = np.exp(1)*ezp
         self.ugv.kRate = 1/(d*d)
-        self.ugv.kRad = 0.5
+        self.ugv.kRad = 0.6
 
         self.rate = rospy.Rate(30)
 
