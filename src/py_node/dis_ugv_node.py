@@ -33,7 +33,7 @@ class UgvController:
         self.ugvPvRefSub = rospy.Subscriber('/{}/ref'.format(self.ugv.name), UgvPosVelMsg, self.ref_pv_cb)
         self.ugvPsRefSub = rospy.Subscriber('/{}/reference'.format(self.ugv.name), PoseStamped, self.ref_ps_cb)
         self.ugvConsSub = rospy.Subscriber('/{}/cons'.format(self.ugv.name), UgvConstraintMsg, self.cons_cb)
-        self.ugvModeSub = rospy.Subscriber('/{}/ugv_mode'.format(self.ugv.name), Int8, self.setMode)
+        self.ugvModeSub = rospy.Subscriber('/{}/update_ugv_mode'.format(self.ugv.name), Int8, self.setMode)
         self.ugvCmdPub = rospy.Publisher('/{}/cmd_vel'.format(self.ugv.name), Twist, queue_size=10)
         self.ugvParamPub = rospy.Publisher('/{}/params'.format(self.ugv.name), UgvParamsMsg, queue_size=10)
 

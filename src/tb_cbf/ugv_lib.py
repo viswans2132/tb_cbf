@@ -81,6 +81,10 @@ class Ugv(object):
         self.returnFlag = False
         self.stopFlag = False
 
+        self.paramFlag = False
+
+        self.ugvMode = 0
+
 
     def setMode(self, data):
         self.filterFlag = True
@@ -96,6 +100,7 @@ class Ugv(object):
 
         else:
             print('Invalid mode for UGV: {}'.format(self.name))
+        self.ugvMode = data
 
 
 
@@ -176,8 +181,8 @@ class Ugv(object):
                 try:
                     result = prob.solve()
                     desVel = self.u.value
-                except cp.error.SolveError:
-                    print('SolveError for {}'.format(self.name))
+                except cp.error.SolverError:
+                    print('Solver Error for {}'.format(self.name))
                     desVel = np.array([0,0.0])
 
             except ValueError:

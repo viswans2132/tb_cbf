@@ -39,29 +39,16 @@ class UgvController:
         self.ugvPvRefSub = rospy.Subscriber('/{}/ref'.format(self.ugv.name), UgvPosVelMsg, self.ref_pv_cb)
         self.ugvPsRefSub = rospy.Subscriber('/{}/reference'.format(self.ugv.name), PoseStamped, self.ref_ps_cb)
         self.ugvConsSub = rospy.Subscriber('/{}/cons'.format(self.ugv.name), UgvConstraintMsg, self.cons_cb)
-        self.ugvModeSub = rospy.Subscriber('/{}/ugv_mode'.format(self.ugv.name), Int8, self.setMode)
+        self.ugvModeSub = rospy.Subscriber('/{}/update_ugv_mode'.format(self.ugv.name), Int8, self.setMode)
         self.ugvCmdPub = rospy.Publisher('/{}/cmd_vel'.format(self.ugv.name), Twist, queue_size=10)
-        self.ugvParamPub = rospy.Publisher('/{}/params'.format(self.ugv.name), UgvParamsMsg, queue_size=10)
+        self.ugvParamSub = rospy.Subscriber('/{}/params'.format(self.ugv.name), UgvParamsMsg, self.params_cb)
+        self.ugvUpdateParamPub = rospy.Publisher('/{}/update_params'.format(self.ugv.name), UgvParamsMsg, queue_size=10)
+        self.ugvModePub = rospy.Publisher('/{}/ugv_mode'.format(self.ugv.name), Int8, queue_size=10)
 
         self.cmdVelMsg = Twist()
         self.cmdArray = np.array([0,0,0,0.0])
 
-        time.sleep(1)
         print('Node {}: Awake'.format(self.name))
-
-        paramMsg = UgvParamsMsg()
-        paramMsg.kRad = self.ugv.kRad
-        paramMsg.omegaC = self.ugv.omegaC
-        paramMsg.kScaleD = self.ugv.kScaleD
-        paramMsg.kRate = self.ugv.kRate
-        paramMsg.kOffset = self.ugv.kOffset
-        paramMsg.omegaD = self.ugv.omegaD
-        paramMsg.kHeight = self.ugv.kHeight
-        paramMsg.kScaleA = self.ugv.kScaleA
-        paramMsg.omegaA = self.ugv.omegaA
-        paramMsg.omegaB = self.ugv.omegaB
-        self.ugvParamPub.publish(paramMsg)
-        self.rate.sleep()
 
         self.timer = rospy.get_time()
 
@@ -71,19 +58,35 @@ class UgvController:
 
     def loop(self):
         odomReceived = self.ugv.generateControlInputs(self.cmdArray)
-        if rospy.get_time() - self.timer > 0.2:
-            self.ugv.landFlag = True
         if odomReceived:
             # print(self.cmdArray)
             self.cmdVelMsg.linear.x = self.cmdArray[0]
             self.cmdVelMsg.angular.z = self.cmdArray[1]
             self.ugvCmdPub.publish(self.cmdVelMsg)
-            self.rate.sleep()
-        else:
+        if not self.ugv.paramFlag:            
+            paramMsg = UgvParamsMsg()
+            paramMsg.kRad = self.ugv.kRad
+            paramMsg.omegaC = self.ugv.omegaC
+            paramMsg.kScaleD = self.ugv.kScaleD
+            paramMsg.kRate = self.ugv.kRate
+            paramMsg.kOffset = self.ugv.kOffset
+            paramMsg.omegaD = self.ugv.omegaD
+            paramMsg.kHeight = self.ugv.kHeight
+            paramMsg.kScaleA = self.ugv.kScaleA
+            paramMsg.omegaA = self.ugv.omegaA
+            paramMsg.omegaB = self.ugv.omegaB
+            self.ugvUpdateParamPub.publish(paramMsg)
+        self.rate.sleep()
+
+        if rospy.get_time() - self.timer > 0.5:
+            self.ugv.landFlag = True
             print('{}: Odometry not received'.format(self.name))
 
     def setMode(self, msg):
         self.ugv.setMode(msg.data)
+        modeMsg = Int8()
+        modeMsg.data = self.ugv.ugvMode
+        self.ugvModePub.publish(modeMsg)
 
     def cons_cb(self, msg):
         matrix = np.array(msg.constraints).reshape((-1,3))
@@ -101,6 +104,11 @@ class UgvController:
     def start_cb(self, data):
         self.ugv.startFlag = True
         print('Take off: Active')
+
+
+    def params_cb(self, data):
+        self.ugv.paramFlag = True
+
 
     def ref_pv_cb(self, msg):
         try:
