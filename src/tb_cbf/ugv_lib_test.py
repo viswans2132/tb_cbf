@@ -221,8 +221,8 @@ class Ugv(object):
                 velArray[1] = 0.0
             else:
                 if self.filterFlag:
-                    posOff = self.pos[:2] + self.off*self.R.T[:,0]
-                    desPosOff = self.desPos[:2] + self.off*self.R.T[:,0]
+                    posOff = self.pos[:2]
+                    desPosOff = self.desPos[:2]
                     errPos = posOff - desPosOff
                     # print('err')
                     if np.linalg.norm(errPos) < 0.05:

@@ -1,23 +1,25 @@
 <?xml version="1.0"?>
 <launch>
 	
-	<group ns="demo_turtle1">
+	<group ns="turtle1">
 		<node pkg="tb_cbf" name="ugv_node" type="dis_ugv_node.py" output="screen">
-			<param name="ugv_name" value="demo_turtle1" />
+			<param name="ugv_name" value="turtle1" />
 		</node>
 	</group> 
 	
-	<group ns="demo_turtle4">
+	<group ns="turtle4">
 		<node pkg="tb_cbf" name="ugv_node" type="dis_ugv_node.py" output="screen">
-			<param name="ugv_name" value="demo_turtle4" />
+			<param name="ugv_name" value="turtle4" />
 		</node>
 	</group> 
 	
-	<group ns="demo_turtle3">
+	<group ns="turtle3">
 		<node pkg="tb_cbf" name="ugv_node" type="dis_ugv_node.py" output="screen">
-			<param name="ugv_name" value="demo_turtle3" />
+			<param name="ugv_name" value="turtle3" />
 		</node>
 	</group> 
 	<node pkg="cbf_constraints" name="master_tb_node" type="master_cf_tb_node.py" output="screen"/>
-
+    <node pkg="tf" type="static_transform_publisher" name="world_odom_broadcaster" args="0 0 0 0 0 0 1 world odom 1000" />
+  	<node pkg="tf" type="static_transform_publisher" name="world_map_broadcaster" args="0 0 0 0 0 0 1 world map 1000" />
+  	
 </launch>

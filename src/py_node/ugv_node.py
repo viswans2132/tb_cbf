@@ -31,11 +31,11 @@ class UgvController:
         self.rate = rospy.Rate(30)
 
         # self.ugvOdomSub = rospy.Subscriber('/vicon/{}/{}/odom'.format(self.ugv.name, self.ugv.name), Odometry, self.odom_cb)
-        self.ugvOdomSub = rospy.Subscriber('/odom'.format(self.ugv.name, self.ugv.name), Odometry, self.odom_cb)
+        self.ugvOdomSub = rospy.Subscriber('/demo_turtle1/odom'.format(self.ugv.name, self.ugv.name), Odometry, self.odom_cb)
         # self.cylOdomSub = rospy.Subscriber('/gazebo/model_states', ModelStates, self.obs_cb)
         self.ugvConsSub = rospy.Subscriber('/{}/cons'.format(self.ugv.name), UgvConstraintMsg, self.cons_cb)
         # self.ugvCmdPub = rospy.Publisher('/{}/cmd_vel'.format(self.ugv.name), Twist, queue_size=10)
-        self.ugvCmdPub = rospy.Publisher('/cmd_vel'.format(self.ugv.name), Twist, queue_size=10)
+        self.ugvCmdPub = rospy.Publisher('/demo_turtle1/cmd_vel'.format(self.ugv.name), Twist, queue_size=10)
         self.ugvParamPub = rospy.Publisher('/{}/param'.format(self.ugv.name), UgvParamsMsg, queue_size=10)
 
         self.cmdVelMsg = Twist()
@@ -62,15 +62,17 @@ class UgvController:
 
         self.timer = rospy.get_time()
 
+        self.ugv.filterFlag = True
+
         while not rospy.is_shutdown():
             self.loop()
 
 
     def loop(self):
-        h1 = 1 - self.ugv.pos[0]
-        dh1dx = - 1
-        dh1dy = 0.0
-        dh1dt = -self.ugv.off*np.sin(self.ugv.yaw)*self.ugv.ang_vel[2]
+        # h1 = 1 - self.ugv.pos[0]
+        # dh1dx = - 1
+        # dh1dy = 0.0
+        # dh1dt = -self.ugv.off*np.sin(self.ugv.yaw)*self.ugv.ang_vel[2]
 
         # cylCenter = np.array([3.0, -0.12])
         errCyl = self.ugv.pos[:2] - self.obsPos
@@ -78,11 +80,11 @@ class UgvController:
 
 
 
-        # h1 = sq_dist(errCyl, np.array([1.0, 1.0])) - 0.36
-        # dh1dx = 2*errCyl[0]
-        # dh1dy = 2*errCyl[1]
-        # dh1dt = 2*errCyl[0]*np.sin(self.ugv.yaw)*self.ugv.off*self.ugv.ang_vel[2] - 2*errCyl[1]*np.cos(self.ugv.yaw)*self.ugv.off*self.ugv.ang_vel[2]
-        # dh1dt = 0.0
+        h1 = sq_dist(errCyl, np.array([1.0, 1.0])) - 0.36
+        dh1dx = 2*errCyl[0]
+        dh1dy = 2*errCyl[1]
+        dh1dt = 2*errCyl[0]*np.sin(self.ugv.yaw)*self.ugv.off*self.ugv.ang_vel[2] - 2*errCyl[1]*np.cos(self.ugv.yaw)*self.ugv.off*self.ugv.ang_vel[2]
+        dh1dt = 0.0
         print('h: {:.3f}'.format(h1))
         # print('h: {:.3f}'.format(h1))
         A = np.array([dh1dx, dh1dy])
@@ -96,6 +98,7 @@ class UgvController:
         if rospy.get_time() - self.timer > 0.2:
             self.ugv.landFlag = True
         if odomReceived:
+            self.ugv.desPos = np.array([0.0, -0.1])
             self.cmdVelMsg.linear.x = self.cmdArray[0]
             self.cmdVelMsg.angular.z = self.cmdArray[1]
             self.ugvCmdPub.publish(self.cmdVelMsg)
