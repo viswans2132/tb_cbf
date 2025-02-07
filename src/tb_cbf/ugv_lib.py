@@ -127,6 +127,11 @@ class Ugv(object):
         # self.vel[2] = velocity[2]
         self.ang_vel[2] = velocity[3]
 
+
+        self.pos[0] = self.pos[0] - 0.07*np.cos(self.yaw)
+        self.pos[1] = self.pos[1] - 0.07*np.sin(self.yaw)
+        self.pos[2] = self.pos[2] + 0.25
+
         if self.odomStatus == False:
             self.odomStatus = True
             self.desPos[0] = self.pos[0]
@@ -235,7 +240,7 @@ class Ugv(object):
 
                     desVel = self.filterValues(desVel)
                     # if(self.name == "demo_turtle1"):
-                    print('Error: {:.3f} : {:.3f}, {:.3f}'.format(errPos[0], errPos[1], self.yaw))
+                    # print('Error: {:.3f} : {:.3f}, {:.3f}'.format(errPos[0], errPos[1], self.yaw))
                     #     print('Desired Velocity: {:.3f} : {:.3f}, {:.3f}'.format(desVel[0], desVel[1], self.yaw))
 
 
@@ -245,7 +250,7 @@ class Ugv(object):
                     cmdVel = RlInv.dot(desVel)
                     if np.linalg.norm(cmdVel) > 0.3:
                         cmdVel = 0.3*cmdVel/np.linalg.norm(cmdVel)
-                    cmdVel = np.maximum(-np.array([0.15, 0.3]), np.minimum(np.array([0.15, 0.3]), cmdVel))
+                    cmdVel = np.maximum(-np.array([0.1, 0.3]), np.minimum(np.array([0.1, 0.3]), cmdVel))
                     # if(self.name == "demo_turtle4"):
                     #     print('Desired Velocity: {:.3f} : {:.3f}'.format(cmdVel[0], cmdVel[1]))
 

@@ -25,7 +25,7 @@ class UgvController:
         self.name = name
 
         self.ugv = Ugv(name)
-        ezp = 0.5
+        ezp = 0.6
         theta = np.deg2rad(25)
         self.omegaD = 0.5
         d = ezp*np.tan(theta)
