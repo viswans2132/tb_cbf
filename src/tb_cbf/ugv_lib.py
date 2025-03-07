@@ -57,7 +57,7 @@ class Ugv(object):
         self.kOffset = 0.01
         self.omegaD = 3
         
-        self.kRad = 0.3
+        self.kRad = 0.35
         self.omegaC = 0.3
 
         self.kHeight = 1.0
@@ -128,9 +128,9 @@ class Ugv(object):
         self.ang_vel[2] = velocity[3]
 
 
-        self.pos[0] = self.pos[0] - 0.07*np.cos(self.yaw)
-        self.pos[1] = self.pos[1] - 0.07*np.sin(self.yaw)
-        self.pos[2] = self.pos[2] + 0.25
+        # self.pos[0] = self.pos[0] - 0.07*np.cos(self.yaw)
+        # self.pos[1] = self.pos[1] - 0.07*np.sin(self.yaw)
+        # self.pos[2] = self.pos[2] + 0.25
 
         if self.odomStatus == False:
             self.odomStatus = True
