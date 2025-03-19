@@ -47,7 +47,7 @@ class Ugv(object):
         # self.odom_sub = rospy.Subscriber('/vicon/{}/{}/odom'.format(name, name), Odometry, self.odom_cb)
         # self.cmd_sub = rospy.Subscriber('/old_cmd_vel', TwistStamped, self.oldControl_cb)
 
-        ezp = 0.5
+        ezp = 0.4
         theta = np.deg2rad(30)
         d = ezp*np.tan(theta)
 
@@ -55,16 +55,16 @@ class Ugv(object):
         self.kRate = 1/(d*d)
 
         self.kOffset = 0.01
-        self.omegaD = 3
+        self.omegaD = 2.0
         
         self.kRad = 0.35
         self.omegaC = 0.3
 
-        self.kHeight = 1.0
+        self.kHeight = 0.7
         self.kScaleA = self.kHeight/(self.kRad*self.kRad)
 
         self.omegaA = 0.3
-        self.omegaB = 5.0
+        self.omegaB = 1.0
 
 
         self.odomStatus = False
@@ -250,7 +250,7 @@ class Ugv(object):
                     cmdVel = RlInv.dot(desVel)
                     if np.linalg.norm(cmdVel) > 0.3:
                         cmdVel = 0.3*cmdVel/np.linalg.norm(cmdVel)
-                    cmdVel = np.maximum(-np.array([0.1, 0.3]), np.minimum(np.array([0.1, 0.3]), cmdVel))
+                    cmdVel = np.maximum(-np.array([0.07, 0.3]), np.minimum(np.array([0.07, 0.3]), cmdVel))
                     # if(self.name == "demo_turtle4"):
                     #     print('Desired Velocity: {:.3f} : {:.3f}'.format(cmdVel[0], cmdVel[1]))
 
