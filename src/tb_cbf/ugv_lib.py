@@ -54,7 +54,7 @@ class Ugv(object):
         self.kScaleD = np.exp(1)*ezp
         self.kRate = 1/(d*d)
 
-        self.kOffset = 0.01
+        self.kOffset = -0.02
         self.omegaD = 2.0
         
         self.kRad = 0.35
