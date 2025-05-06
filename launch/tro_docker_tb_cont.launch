@@ -1,5 +1,5 @@
 <launch>
-  <arg name="namespace"  default="tb1"/>
+  <arg name="namespace"  default="demo_turtle1"/>
   
   <group ns="$(arg namespace)">
     <node pkg="tb_cbf" name="ugv_node" type="dis_ugv_node_sim.py" output="screen">
