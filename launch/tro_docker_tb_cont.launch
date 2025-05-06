@@ -2,7 +2,7 @@
   <arg name="namespace"  default="tb1"/>
   
   <group ns="$(arg namespace)">
-    <node pkg="tb_cbf" name="ugv_node" type="dis_ugv_node.py" output="screen">
+    <node pkg="tb_cbf" name="ugv_node" type="dis_ugv_node_sim.py" output="screen">
       <param name="ugv_name" value="$(arg namespace)" />
     </node>
   </group>  
