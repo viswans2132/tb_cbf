@@ -84,6 +84,7 @@ class Ugv(object):
         self.paramFlag = False
 
         self.ugvMode = 0
+        self.qp_times = []
 
 
     def setMode(self, data):
@@ -184,7 +185,11 @@ class Ugv(object):
                 constraints = [self.A@self.u >= self.b]
                 prob = cp.Problem(cp.Minimize(cp.quad_form(self.u-u_, self.P)), constraints)
                 try:
+                    t0 = time.perf_counter()
                     result = prob.solve()
+                    t1 = time.perf_counter()
+                    solve_time = t1 - t0
+                    self.qp_times.append(solve_time)
                     desVel = self.u.value
                 except cp.error.SolverError:
                     print('Solver Error for {}'.format(self.name))

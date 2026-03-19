@@ -1,0 +1,124 @@
+<launch>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find turtlebot3_gazebo)/worlds/empty.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="false"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+  <group ns="dcf1">
+    
+    <param name="robot_description" command="$(find xacro)/xacro '$(find ss_workshop)/models/urdf/hb.xacro'"/>
+    <param name="tf_prefix" value="dcf1" />
+    
+
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+        <param name="tf_prefix" value="dcf1" />
+    </node>
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  </group>
+
+  <group ns="dcf2">
+    
+    <param name="robot_description" command="$(find xacro)/xacro '$(find ss_workshop)/models/urdf/hb.xacro'"/>
+    <param name="tf_prefix" value="dcf2" />
+    
+
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+        <param name="tf_prefix" value="dcf2" />
+    </node>
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  </group>
+
+  <group ns="dcf3">
+    
+    <param name="robot_description" command="$(find xacro)/xacro '$(find ss_workshop)/models/urdf/hb.xacro'"/>
+    <param name="tf_prefix" value="dcf3" />
+    
+
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+        <param name="tf_prefix" value="dcf3" />
+    </node>
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  </group>
+
+  <group ns="dcf4">
+    
+    <param name="robot_description" command="$(find xacro)/xacro '$(find ss_workshop)/models/urdf/hb_white.xacro'"/>
+    <param name="tf_prefix" value="dcf4" />
+    
+
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+        <param name="tf_prefix" value="dcf4" />
+    </node>
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  </group>
+
+  <group ns="dcf5">
+    
+    <param name="robot_description" command="$(find xacro)/xacro '$(find ss_workshop)/models/urdf/hb.xacro'"/>
+    <param name="tf_prefix" value="dcf5" />
+    
+
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+        <param name="tf_prefix" value="dcf5" />
+    </node>
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  </group>
+
+  <group ns="demo_turtle1">
+    <param name="robot_description" command="$(find xacro)/xacro '$(find ss_workshop)/models/urdf/turtlebot3_waffle_pi.urdf.xacro'"/>
+    <param name="tf_prefix" value="demo_turtle1" />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+      <param name="tf_prefix" value="demo_turtle1" />
+    </node>
+  </group>
+  <node pkg="tf" type="static_transform_publisher" name="odom_demo_turtle1_broadcaster" args="0 0 0 0 0 0 1 odom demo_turtle1/odom 1000" />
+
+  <group ns="demo_turtle2">
+    <param name="robot_description" command="$(find xacro)/xacro '$(find ss_workshop)/models/urdf/turtlebot3_waffle_pi.urdf.xacro'"/>
+    <param name="tf_prefix" value="demo_turtle2" />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+      <param name="tf_prefix" value="demo_turtle2" />
+    </node>
+  </group>
+  <node pkg="tf" type="static_transform_publisher" name="odom_demo_turtle2_broadcaster" args="0 0 0 0 0 0 1 odom demo_turtle2/odom 1000" />
+
+  <group ns="demo_turtle3">
+    <param name="robot_description" command="$(find xacro)/xacro '$(find ss_workshop)/models/urdf/turtlebot3_waffle_pi.urdf.xacro'"/>
+    <param name="tf_prefix" value="demo_turtle3" />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+      <param name="tf_prefix" value="demo_turtle3" />
+    </node>
+  </group>
+  <node pkg="tf" type="static_transform_publisher" name="odom_demo_turtle3_broadcaster" args="0 0 0 0 0 0 1 odom demo_turtle3/odom 1000" />
+
+  <group ns="demo_turtle4">
+    <param name="robot_description" command="$(find xacro)/xacro '$(find ss_workshop)/models/urdf/turtlebot3_waffle_pi_lcbf.urdf.xacro'"/>
+    <param name="tf_prefix" value="demo_turtle4" />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+      <param name="tf_prefix" value="demo_turtle4" />
+    </node>
+  </group>
+  <node pkg="tf" type="static_transform_publisher" name="odom_demo_turtle4_broadcaster" args="0 0 0 0 0 0 1 odom demo_turtle4/odom 1000" />
+
+  <group ns="demo_turtle5">
+    <param name="robot_description" command="$(find xacro)/xacro '$(find ss_workshop)/models/urdf/turtlebot3_waffle_pi.urdf.xacro'"/>
+    <param name="tf_prefix" value="demo_turtle5" />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+      <param name="tf_prefix" value="demo_turtle5" />
+    </node>
+  </group>
+  <node pkg="tf" type="static_transform_publisher" name="odom_demo_turtle5_broadcaster" args="0 0 0 0 0 0 1 odom demo_turtle5/odom 1000" />
+
+  <node pkg="tf" type="static_transform_publisher" name="world_odom_broadcaster" args="0 0 0 0 0 0 1 world odom 1000" />
+  <node pkg="tf" type="static_transform_publisher" name="world_map_broadcaster" args="0 0 0 0 0 0 1 world map 1000" />
+</launch>

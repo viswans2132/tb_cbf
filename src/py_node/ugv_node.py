@@ -7,12 +7,13 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist, PoseStamped
 from std_msgs.msg import Header, Int8
 from tb_cbf.msg import UgvConstraintMsg, UgvParamsMsg
-from gazebo_msgs.msg import ModelStates
 import time
-import numpy as np
 import sys
 # from cf_cbf.drone_lib import Drone
 from tb_cbf.ugv_lib import Ugv
+
+from gazebo_msgs.msg import ModelStates
+import numpy as np
 
 def dist(x_):
     return np.linalg.norm(x_)
@@ -102,7 +103,6 @@ class UgvController:
             self.cmdVelMsg.linear.x = self.cmdArray[0]
             self.cmdVelMsg.angular.z = self.cmdArray[1]
             self.ugvCmdPub.publish(self.cmdVelMsg)
-            # print('Publishing {:.3f}: {:.3f}'.format(self.cmdArray[0], self.cmdArray[1]))
             self.rate.sleep()
 
     def setMode(self, msg):

@@ -1,6 +1,8 @@
  #!/usr/bin/env python
  # license removed for brevity
 import rospy
+import rospkg
+import os
 import pkg_resources
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
@@ -27,13 +29,15 @@ class UgvController:
         self.ugv = Ugv(name)
         ezp = 0.6
         theta = np.deg2rad(25)
-        self.omegaD = 0.5
+        self.omegaD = 1.0
         d = ezp*np.tan(theta)
         self.ugv.kScaleD = np.exp(1)*ezp
         self.ugv.kRate = 1/(d*d)
         self.ugv.kRad = 0.6
+        self.ugv.kScale = self.ugv.kHeight/(self.ugv.kRad*self.ugv.kRad)
 
         self.rate = rospy.Rate(30)
+        self.filesSaved = False
 
         self.ugvOdomSub = rospy.Subscriber('/{}/odom'.format(self.ugv.name), Odometry, self.odom_cb)
         self.ugvPvRefSub = rospy.Subscriber('/{}/ref'.format(self.ugv.name), UgvPosVelMsg, self.ref_pv_cb)
@@ -54,6 +58,28 @@ class UgvController:
 
         while not rospy.is_shutdown():
             self.loop()
+            if self.ugv.stopFlag and not self.filesSaved:
+                self.save_qp_values()
+                self.filesSaved = True
+
+
+
+    def save_qp_values(self):
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+
+        data = {
+            "ugv_qp_times": np.array(self.ugv.qp_times, dtype=float)
+        }
+
+
+        rospack = rospkg.RosPack()
+        pkg_path = rospack.get_path("cbf_constraints")
+
+        filename = os.path.join(pkg_path, "time_results", f"{self.ugv.name}_qp_times_{timestamp}.npy")
+        
+        np.save(filename, data)
+
+        rospy.loginfo("Saved QP times to %s", filename)
 
 
     def loop(self):

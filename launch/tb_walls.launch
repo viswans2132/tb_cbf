@@ -7,8 +7,10 @@
   <arg name="first_tb3_z_pos" default=" 0.0"/>
   <arg name="first_tb3_yaw"   default=" 0.0"/>
 
+  <env name="GAZEBO_MODEL_PATH" value="${GAZEBO_MODEL_PATH}:$(find rotors_gazebo)/models:$(find ss_workshop)/models"/>
+
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find turtlebot3_gazebo)/worlds/empty.world"/>
+    <arg name="world_name" value="$(find turtlebot3_gazebo)/worlds/empty_world.world"/>
     <arg name="paused" value="true"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
@@ -32,11 +34,73 @@
   </group>
 
 
+  <param name="wall_desc1" command="$(find xacro)/xacro --inorder '$(find ss_workshop)/models/urdf/curved_wall.xacro' 
+    namespace:='wall1'" />  
+  <node name="spawn_wall1" pkg="gazebo_ros" type="spawn_model"
+   args="-param wall_desc1
+         -urdf
+         -x 0.0
+         -y 2.0
+         -z 0.1
+         -model 'wall1'"
+   respawn="false" output="screen">
+  </node>
+
+  <param name="wall_desc2" command="$(find xacro)/xacro --inorder '$(find ss_workshop)/models/urdf/curved_wall.xacro' 
+    namespace:='wall2'" />  
+  <node name="spawn_wall2" pkg="gazebo_ros" type="spawn_model"
+   args="-param wall_desc2
+         -urdf
+         -x 0.0
+         -y -2.0
+         -z 0.1
+         -model 'wall2'"
+   respawn="false" output="screen">
+  </node>
+
+  <param name="wall_desc3" command="$(find xacro)/xacro --inorder '$(find ss_workshop)/models/urdf/curved_wall.xacro' 
+    namespace:='wall3'" />  
+  <node name="spawn_wall3" pkg="gazebo_ros" type="spawn_model"
+   args="-param wall_desc3
+         -urdf
+         -x -10.0
+         -y 2.0
+         -z 0.1
+         -model 'wall3'"
+   respawn="false" output="screen">
+  </node>
+
+  <param name="wall_desc4" command="$(find xacro)/xacro --inorder '$(find ss_workshop)/models/urdf/curved_wall.xacro' 
+    namespace:='wall4'" />  
+  <node name="spawn_wall4" pkg="gazebo_ros" type="spawn_model"
+   args="-param wall_desc4
+         -urdf
+         -x -10.0
+         -y -2.0
+         -z 0.1
+         -model 'wall4'"
+   respawn="false" output="screen">
+  </node>
+
+  <param name="box_desc1" command="$(find xacro)/xacro --inorder '$(find ss_workshop)/models/urdf/box1.xacro' 
+    namespace:='box1' mass:=10.0" />  
+  <node name="spawn_box1" pkg="gazebo_ros" type="spawn_model"
+   args="-param box_desc1
+         -urdf
+         -x 2.0
+         -y 0.0
+         -z 0.5
+         -model 'box1'"
+   respawn="false" output="screen">
+  </node>
+
+
   <node pkg="tf" type="static_transform_publisher" name="world_odom_broadcaster" args="0 0 0 0 0 0 1 world odom 1000" />
   <node pkg="tf" type="static_transform_publisher" name="world_map_broadcaster" args="0 0 0 0 0 0 1 world map 1000" />
   <node pkg="tf" type="static_transform_publisher" name="odom_dt1odom_broadcaster" args="0 0 0 0 0 0 1 odom demo_turtle1/odom 1000" />
   <node pkg="tf" type="static_transform_publisher" name="footprint_to_scan" args="0 0 0.23 0 0 0 1 base_footprint base_scan 1000" />
   <!-- <node pkg="tf" type="static_transform_publisher" name="odom_footprint" args="0 0 0.0 0 0 0 1 odom base_footprint 1000" /> -->
   <node pkg="tf" type="static_transform_publisher" name="dt1fp_footprint" args="0 0 0.0 0 0 0 1 base_footprint demo_turtle1/base_footprint 1000" />
+  
 
 </launch>
